@@ -1,66 +1,67 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authAPI } from '@/lib/api';
+import Link from 'next/link';
+import { api } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-    full_name: '',
-  });
+  const [step, setStep] = useState<'email' | 'code'>('email');
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      setError('⚠️ Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('⚠️ Password must be at least 6 characters');
-      return;
-    }
-
+    setMessage('');
     setLoading(true);
 
     try {
-      await authAPI.register({
-        email: formData.email,
-        username: formData.username,
-        password: formData.password,
-        full_name: formData.full_name || undefined,
-      });
-
-      // Auto-login after registration
-      const loginResponse = await authAPI.login(formData.username, formData.password);
-      localStorage.setItem('token', loginResponse.access_token);
-
-      const userData = await authAPI.getCurrentUser();
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      // Redirect to dashboard
-      router.push('/dashboard');
+      const response = await api.post('/auth/send-code', { email });
+      setMessage(response.data.message);
+      setStep('code');
     } catch (err: any) {
-      console.error('Registration error:', err);
+      console.error('Send code error:', err);
 
-      // Better error messages
-      if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
-        setError('🔴 Backend server is offline. Please run: docker-compose up -d');
-      } else if (err.response?.data?.detail) {
+      if (err.response?.data?.detail) {
         setError(`⚠️ ${err.response.data.detail}`);
+      } else if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        setError('🔴 Cannot connect to server. Check if Docker containers are running.');
       } else {
-        setError('⚠️ Registration failed. Check if backend is running (docker-compose ps)');
+        setError('⚠️ Failed to send code. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/auth/verify-code', { email, code });
+
+      // Store token
+      localStorage.setItem('token', response.data.access_token);
+
+      // Redirect to home
+      router.push('/');
+      router.refresh();
+    } catch (err: any) {
+      console.error('Verify code error:', err);
+
+      if (err.response?.data?.detail) {
+        setError(`⚠️ ${err.response.data.detail}`);
+      } else if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        setError('🔴 Cannot connect to server. Check if Docker containers are running.');
+      } else {
+        setError('⚠️ Invalid code. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -68,204 +69,170 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cyber-dark-900 flex items-center justify-center py-12 px-4 relative overflow-hidden">
-      {/* Animated Grid Background */}
-      <div className="absolute inset-0" style={{
-        backgroundImage: `
-          linear-gradient(rgba(0, 255, 255, 0.02) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 1px)
-        `,
-        backgroundSize: '50px 50px',
-      }}></div>
-
-      {/* Neon Glow Effects */}
-      <div className="absolute top-20 -left-20 w-96 h-96 bg-secondary-500/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 -right-20 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
-
-      <div className="max-w-md w-full relative z-10">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg blur-md opacity-75 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative">
-                <div className="text-5xl font-black tracking-tighter">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500">
-                    ⚡ CODEC
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest mt-1">Cyberpunk Marketplace</div>
-              </div>
-            </div>
-          </Link>
+    <div className="min-h-screen bg-cyber-dark-900 flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* Animated grid background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyber-dark-900 via-cyber-dark-800 to-cyber-dark-900">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              linear-gradient(#00FFFF 1px, transparent 1px),
+              linear-gradient(90deg, #00FFFF 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+            animation: 'grid-flow 20s linear infinite'
+          }}></div>
         </div>
+      </div>
 
-        {/* Register Card */}
-        <div className="bg-cyber-dark-700/80 backdrop-blur-md border border-primary-500/30 rounded-xl shadow-glow p-8 animate-scale-in">
-          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500 mb-2 text-center uppercase tracking-tight">
-            Join the Network
-          </h1>
-          <p className="text-gray-400 text-center mb-8">Enter the cyberpunk marketplace</p>
+      {/* Glowing orbs */}
+      <div className="absolute top-20 left-20 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl animate-float"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
 
+      {/* Form container */}
+      <div className="relative w-full max-w-md">
+        <div className="bg-cyber-dark-800/80 backdrop-blur-xl border border-primary-500/30 rounded-2xl shadow-glow p-8 animate-fade-in">
+
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="text-5xl font-black tracking-tighter">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500">
+                ⚡ CODEC
+              </span>
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-widest mt-1">Cyberpunk Marketplace</div>
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-100 mb-2">
+              {step === 'email' ? 'Join the Network' : 'Verify Your Code'}
+            </h1>
+            <p className="text-gray-400 text-sm">
+              {step === 'email'
+                ? 'Enter your email to get started'
+                : `Code sent to ${email}`}
+            </p>
+          </div>
+
+          {/* Error message */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg mb-6 animate-slide-down backdrop-blur-sm">
-              <p className="text-sm font-mono">{error}</p>
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="full_name" className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
-                <span className="text-accent-500">▹</span> Full Name (Optional)
-              </label>
-              <input
-                id="full_name"
-                type="text"
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                className="w-full px-4 py-3 bg-cyber-dark-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-mono"
-                placeholder="John Doe"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="username" className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
-                <span className="text-primary-500">▹</span> Username *
-              </label>
-              <input
-                id="username"
-                type="text"
-                required
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="w-full px-4 py-3 bg-cyber-dark-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-mono"
-                placeholder="trader_001"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
-                <span className="text-secondary-500">▹</span> Email Address *
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 bg-cyber-dark-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-600 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-500/50 outline-none transition-all font-mono"
-                placeholder="trader@codec.net"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
-                <span className="text-primary-500">▹</span> Password *
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 bg-cyber-dark-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-mono"
-                placeholder="••••••••"
-              />
-              <p className="text-xs text-gray-500 mt-1 font-mono">Min. 6 characters</p>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
-                <span className="text-secondary-500">▹</span> Confirm Password *
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full px-4 py-3 bg-cyber-dark-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-600 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-500/50 outline-none transition-all font-mono"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div className="flex items-start pt-2">
-              <input
-                type="checkbox"
-                required
-                className="rounded bg-cyber-dark-800 border-gray-700 text-primary-500 focus:ring-primary-500 focus:ring-offset-cyber-dark-700 mt-1"
-              />
-              <span className="ml-3 text-sm text-gray-400">
-                I agree to the{' '}
-                <a href="/terms" className="text-primary-500 hover:text-primary-400 font-semibold">
-                  Terms of Service
-                </a>{' '}
-                and{' '}
-                <a href="/privacy" className="text-secondary-500 hover:text-secondary-400 font-semibold">
-                  Privacy Policy
-                </a>
-              </span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-6 relative group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative bg-gradient-to-r from-primary-500 to-secondary-500 text-cyber-dark-900 py-3 rounded-lg font-black text-lg uppercase tracking-wide hover:shadow-glow-lg transition-all duration-300 transform group-hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Connecting...
-                  </span>
-                ) : (
-                  '⚡ Create Account'
-                )}
+          {/* Success message */}
+          {message && (
+            <div className="mb-6 p-4 bg-accent-500/10 border border-accent-500/30 rounded-lg text-accent-500 text-sm">
+              {message}
+              <div className="mt-2 text-xs text-gray-400">
+                💡 For demo: Check Docker logs with <code className="bg-cyber-dark-900 px-1 py-0.5 rounded">docker-compose logs api</code>
               </div>
-            </button>
-          </form>
+            </div>
+          )}
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              Already connected?{' '}
-              <Link href="/auth/login" className="text-primary-500 font-bold hover:text-primary-400 transition-colors">
+          {/* Email step */}
+          {step === 'email' && (
+            <form onSubmit={handleSendCode} className="space-y-6">
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  ▹ Email Address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-cyber-dark-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all"
+                  placeholder="trader@codec.network"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-6 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-cyber-dark-900 font-bold rounded-lg transition-all duration-200 shadow-glow hover:shadow-glow-fuchsia disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? '⚡ Sending...' : '⚡ Send Verification Code'}
+              </button>
+            </form>
+          )}
+
+          {/* Code verification step */}
+          {step === 'code' && (
+            <form onSubmit={handleVerifyCode} className="space-y-6">
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  ▹ Verification Code
+                </label>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full px-4 py-3 bg-cyber-dark-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all text-center text-2xl tracking-widest font-mono"
+                  placeholder="000000"
+                  maxLength={6}
+                  required
+                />
+                <p className="text-gray-500 text-xs mt-2">Enter the 6-digit code from the server logs</p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || code.length !== 6}
+                className="w-full py-3 px-6 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-cyber-dark-900 font-bold rounded-lg transition-all duration-200 shadow-glow hover:shadow-glow-fuchsia disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? '⚡ Verifying...' : '⚡ Verify & Login'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('email');
+                  setCode('');
+                  setError('');
+                  setMessage('');
+                }}
+                className="w-full py-2 px-4 text-gray-400 hover:text-primary-500 transition-colors text-sm"
+              >
+                ← Use different email
+              </button>
+            </form>
+          )}
+
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm">
+              Already have an account?{' '}
+              <Link href="/auth/login" className="text-primary-500 hover:text-primary-400 font-medium transition-colors">
                 Sign In →
               </Link>
             </p>
           </div>
+
+          {/* Features */}
+          <div className="mt-8 pt-6 border-t border-gray-700">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-accent-500 text-xl mb-1">⚡</div>
+                <div className="text-gray-400 text-xs">Instant Access</div>
+              </div>
+              <div>
+                <div className="text-primary-500 text-xl mb-1">🔒</div>
+                <div className="text-gray-400 text-xs">Secure</div>
+              </div>
+              <div>
+                <div className="text-secondary-500 text-xl mb-1">🚀</div>
+                <div className="text-gray-400 text-xs">No Password</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Benefits */}
-        <div className="mt-8 bg-cyber-dark-700/50 backdrop-blur-sm border border-primary-500/20 rounded-xl p-6 space-y-3">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-accent-500 to-accent-600 p-2 rounded-lg">
-              <svg className="w-5 h-5 text-cyber-dark-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-300 font-semibold">100% Free Forever</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-2 rounded-lg">
-              <svg className="w-5 h-5 text-cyber-dark-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-300 font-semibold">Instant Access</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-secondary-500 to-secondary-600 p-2 rounded-lg">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-300 font-semibold">Join 500+ Traders</p>
-          </div>
-        </div>
+        {/* Powered by */}
+        <p className="text-center text-gray-600 text-xs mt-6">
+          Powered by Cyberpunk Technology
+        </p>
       </div>
     </div>
   );

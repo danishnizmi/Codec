@@ -47,8 +47,8 @@ class User(Base):
 
     id = Column(String, primary_key=True)
     email = Column(String, unique=True, nullable=False, index=True)
-    username = Column(String, unique=True, nullable=False, index=True)
-    password_hash = Column(String, nullable=False)
+    username = Column(String, unique=True, nullable=True, index=True)  # Optional now
+    password_hash = Column(String, nullable=True)  # Optional for email-only auth
     full_name = Column(String)
     phone = Column(String)
     avatar_url = Column(String)
@@ -56,6 +56,8 @@ class User(Base):
     location = Column(String)
     is_verified = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    verification_code = Column(String)  # 6-digit code
+    verification_code_expires = Column(DateTime)  # Expiry time
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login_at = Column(DateTime)
