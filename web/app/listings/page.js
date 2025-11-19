@@ -81,16 +81,16 @@ export async function generateMetadata({ searchParams }) {
   const category = searchParams?.category;
   const search = searchParams?.search;
 
-  let title = 'Browse Listings - Marketplace';
+  let title = 'Browse Listings - Codec';
   let description = 'Find great deals on classifieds in your local area';
 
   if (category) {
-    title = `${category.replace('_', ' ')} Listings - Marketplace`;
+    title = `${category.replace('_', ' ')} Listings - Codec`;
     description = `Browse ${category.replace('_', ' ').toLowerCase()} classifieds`;
   }
 
   if (search) {
-    title = `Search: ${search} - Marketplace`;
+    title = `Search: ${search} - Codec`;
     description = `Search results for ${search}`;
   }
 

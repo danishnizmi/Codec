@@ -45,7 +45,7 @@ export default function Navbar() {
               </svg>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-              MarketPlace
+              Codec
             </span>
           </Link>
 

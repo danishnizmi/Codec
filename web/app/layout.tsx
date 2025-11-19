@@ -3,7 +3,7 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 
 export const metadata: Metadata = {
-  title: 'MarketPlace - Buy & Sell Locally',
+  title: 'Codec - Buy & Sell Locally',
   description: 'The best local marketplace to buy and sell items. Find great deals on electronics, vehicles, real estate, and more.',
 }
 
@@ -24,7 +24,7 @@ export default function RootLayout({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               {/* About */}
               <div>
-                <h3 className="text-white font-bold text-lg mb-4">MarketPlace</h3>
+                <h3 className="text-white font-bold text-lg mb-4">Codec</h3>
                 <p className="text-sm leading-relaxed">
                   Your trusted local marketplace for buying and selling items. Connect with buyers and sellers in your area.
                 </p>
@@ -64,7 +64,7 @@ export default function RootLayout({
             </div>
 
             <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-              <p>&copy; {new Date().getFullYear()} MarketPlace. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} Codec. All rights reserved.</p>
             </div>
           </div>
         </footer>
