@@ -1,4 +1,7 @@
-"""Listings routes"""
+"""
+Listings routes - Anonymous marketplace
+No authentication required, content moderation via AWS Bedrock
+"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
@@ -7,46 +10,68 @@ import uuid
 from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError
+import logging
 
 from ..database import get_db
-from ..models import User, Listing, ListingStatus
-from ..schemas import ListingCreate, ListingUpdate, ListingResponse
-from ..auth import get_current_active_user
+from ..models import Listing, ListingStatus, Category
+from ..schemas import ListingCreate, ListingUpdate, ListingResponse, ModerationResult
+from ..content_moderation import get_moderation_service
 from ..config import settings
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
+logger = logging.getLogger(__name__)
 
 # Initialize S3 client
-s3_client = boto3.client(
-    's3',
-    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    region_name=settings.AWS_REGION
-)
+try:
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region_name=settings.AWS_REGION
+    )
+except Exception as e:
+    logger.warning(f"S3 client initialization failed: {e}. Image uploads will not work.")
+    s3_client = None
+
+
+@router.get("/health")
+def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "marketplace": "CyberBazaar",
+        "version": "1.0.0",
+        "authentication": "disabled",
+        "content_moderation": "enabled"
+    }
 
 
 @router.post("/upload-urls", status_code=status.HTTP_200_OK)
 def get_s3_upload_urls(
-    file_count: int = Query(..., ge=1, le=10),
-    current_user: User = Depends(get_current_active_user)
+    file_count: int = Query(..., ge=1, le=10)
 ) -> Dict[str, List[Dict[str, str]]]:
     """
     Generate presigned S3 URLs for image uploads.
-    Client uploads directly to S3, reducing server bandwidth and CPU.
+    No authentication required - anyone can upload images.
 
     Args:
         file_count: Number of upload URLs to generate (1-10)
-        current_user: Authenticated user
 
     Returns:
         Dictionary with upload URLs and file keys
     """
+    if not s3_client:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Image upload service is currently unavailable"
+        )
+
     upload_urls = []
 
     try:
         for i in range(file_count):
             # Generate unique file key
-            file_key = f"listings/{current_user.id}/{uuid.uuid4()}.jpg"
+            file_key = f"listings/{uuid.uuid4()}.jpg"
 
             # Generate presigned POST URL (more secure than PUT)
             presigned_post = s3_client.generate_presigned_post(
@@ -72,6 +97,7 @@ def get_s3_upload_urls(
             })
 
     except ClientError as e:
+        logger.error(f"Failed to generate upload URLs: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate upload URLs: {str(e)}"
@@ -83,20 +109,21 @@ def get_s3_upload_urls(
 @router.get("", response_model=List[ListingResponse])
 def get_listings(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
-    category: Optional[str] = None,
-    status: Optional[ListingStatus] = ListingStatus.ACTIVE,
+    limit: int = Query(50, ge=1, le=100),
+    category: Optional[Category] = None,
     search: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
+    location: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    """Get all listings with filters"""
-    query = db.query(Listing)
+    """
+    Get all active listings with optional filters.
+    Public endpoint - no authentication required.
+    """
+    query = db.query(Listing).filter(Listing.status == ListingStatus.ACTIVE)
 
     # Apply filters
-    if status:
-        query = query.filter(Listing.status == status)
     if category:
         query = query.filter(Listing.category == category)
     if search:
@@ -104,15 +131,18 @@ def get_listings(
         query = query.filter(
             or_(
                 Listing.title.ilike(search_filter),
-                Listing.description.ilike(search_filter)
+                Listing.description.ilike(search_filter),
+                Listing.seller_name.ilike(search_filter)
             )
         )
     if min_price is not None:
         query = query.filter(Listing.price >= min_price)
     if max_price is not None:
         query = query.filter(Listing.price <= max_price)
+    if location:
+        query = query.filter(Listing.location.ilike(f"%{location}%"))
 
-    # Order by created_at descending
+    # Order by created_at descending (newest first)
     query = query.order_by(desc(Listing.created_at))
 
     # Paginate
@@ -121,15 +151,27 @@ def get_listings(
     return listings
 
 
+@router.get("/categories", response_model=List[str])
+def get_categories():
+    """Get all available categories for the marketplace"""
+    return [category.value for category in Category]
+
+
 @router.get("/{listing_id}", response_model=ListingResponse)
 def get_listing(listing_id: str, db: Session = Depends(get_db)):
-    """Get a specific listing by ID"""
-    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    """
+    Get a specific listing by ID.
+    Increments view count each time.
+    """
+    listing = db.query(Listing).filter(
+        Listing.id == listing_id,
+        Listing.status == ListingStatus.ACTIVE
+    ).first()
 
     if not listing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Listing not found"
+            detail="Listing not found or has been removed"
         )
 
     # Increment view count
@@ -142,21 +184,65 @@ def get_listing(listing_id: str, db: Session = Depends(get_db)):
 @router.post("", response_model=ListingResponse, status_code=status.HTTP_201_CREATED)
 def create_listing(
     listing_data: ListingCreate,
-    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Create a new listing"""
+    """
+    Create a new listing - NO AUTHENTICATION REQUIRED.
+    Content is automatically moderated using AWS Bedrock AI.
+
+    Listings with harmful, illegal, or inappropriate content will be rejected.
+    """
+    # Content moderation check
+    try:
+        moderation_service = get_moderation_service(
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+
+        moderation_result = moderation_service.moderate_content(
+            title=listing_data.title,
+            description=listing_data.description
+        )
+
+        if not moderation_result["approved"]:
+            logger.warning(
+                f"Listing rejected by content moderation: {moderation_result['reason']}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": "Content moderation failed",
+                    "reason": moderation_result["reason"],
+                    "confidence": moderation_result["confidence"]
+                }
+            )
+
+        logger.info(
+            f"Listing approved by content moderation (confidence: {moderation_result['confidence']})"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        # If moderation service fails, log and continue (fail open)
+        logger.error(f"Content moderation error: {e}")
+        logger.warning("Allowing listing creation due to moderation service failure")
+
+    # Create the listing
     listing = Listing(
         id=str(uuid.uuid4()),
-        user_id=current_user.id,
         title=listing_data.title,
         description=listing_data.description,
         price=listing_data.price,
+        currency=listing_data.currency,
         category=listing_data.category,
         condition=listing_data.condition,
         location=listing_data.location,
+        seller_name=listing_data.seller_name,
         images=listing_data.images,
         status=ListingStatus.ACTIVE,
+        views=0,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
@@ -165,17 +251,48 @@ def create_listing(
     db.commit()
     db.refresh(listing)
 
+    logger.info(f"New listing created: {listing.id} by {listing.seller_name}")
+
     return listing
 
 
-@router.put("/{listing_id}", response_model=ListingResponse)
-def update_listing(
-    listing_id: str,
-    listing_data: ListingUpdate,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+@router.post("/moderate", response_model=ModerationResult)
+def moderate_content(
+    title: str = Query(..., min_length=3, max_length=200),
+    description: str = Query(..., min_length=10, max_length=5000)
 ):
-    """Update a listing"""
+    """
+    Test content moderation endpoint.
+    Check if content would be approved before submitting a listing.
+    """
+    try:
+        moderation_service = get_moderation_service(
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+
+        result = moderation_service.moderate_content(
+            title=title,
+            description=description
+        )
+
+        return ModerationResult(**result)
+
+    except Exception as e:
+        logger.error(f"Moderation endpoint error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Content moderation service unavailable"
+        )
+
+
+@router.patch("/{listing_id}/mark-sold", response_model=ListingResponse)
+def mark_as_sold(listing_id: str, db: Session = Depends(get_db)):
+    """
+    Mark a listing as sold.
+    No authentication required - anyone can mark as sold.
+    """
     listing = db.query(Listing).filter(Listing.id == listing_id).first()
 
     if not listing:
@@ -184,62 +301,12 @@ def update_listing(
             detail="Listing not found"
         )
 
-    # Check ownership
-    if listing.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this listing"
-        )
-
-    # Update fields
-    update_data = listing_data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(listing, field, value)
-
+    listing.status = ListingStatus.SOLD
     listing.updated_at = datetime.utcnow()
 
     db.commit()
     db.refresh(listing)
 
+    logger.info(f"Listing marked as sold: {listing.id}")
+
     return listing
-
-
-@router.delete("/{listing_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_listing(
-    listing_id: str,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Delete a listing"""
-    listing = db.query(Listing).filter(Listing.id == listing_id).first()
-
-    if not listing:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Listing not found"
-        )
-
-    # Check ownership
-    if listing.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this listing"
-        )
-
-    db.delete(listing)
-    db.commit()
-
-    return None
-
-
-@router.get("/user/my-listings", response_model=List[ListingResponse])
-def get_my_listings(
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Get current user's listings"""
-    listings = db.query(Listing).filter(
-        Listing.user_id == current_user.id
-    ).order_by(desc(Listing.created_at)).all()
-
-    return listings
