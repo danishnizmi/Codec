@@ -1,6 +1,6 @@
 """Application configuration using Pydantic Settings"""
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     AWS_REGION: str = "us-east-1"
     S3_BUCKET: str
 
+    # Deployment
+    EC2_PUBLIC_IP: Optional[str] = None
+
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000"
 
@@ -28,8 +31,19 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> List[str]:
-        """Parse CORS origins from comma-separated string"""
-        return [origin.strip() for origin in self.CORS_ORIGINS.split(',')]
+        """
+        Parse CORS origins from comma-separated string.
+        Automatically includes EC2 IP if configured.
+        """
+        origins = [origin.strip() for origin in self.CORS_ORIGINS.split(',')]
+
+        # Auto-add EC2 IP to CORS if configured
+        if self.EC2_PUBLIC_IP and self.EC2_PUBLIC_IP != "YOUR_EC2_IP":
+            ec2_origin = f"http://{self.EC2_PUBLIC_IP}"
+            if ec2_origin not in origins:
+                origins.append(ec2_origin)
+
+        return origins
 
     class Config:
         env_file = ".env"

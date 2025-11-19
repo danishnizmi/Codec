@@ -81,6 +81,32 @@ fi
 
 echo ""
 echo "==================================================================="
+echo "EC2 Deployment Configuration"
+echo "==================================================================="
+echo ""
+echo "If deploying to AWS EC2, enter your public IP address."
+echo "This will configure CORS and frontend API URL automatically."
+echo "Example: 54.123.45.67"
+echo ""
+
+read -p "Enter EC2 Public IP (or press Enter to use localhost): " EC2_IP
+if [ ! -z "$EC2_IP" ]; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s/YOUR_EC2_IP/$EC2_IP/g" .env
+    else
+        sed -i "s/YOUR_EC2_IP/$EC2_IP/g" .env
+    fi
+
+    echo -e "${GREEN}✓${NC} EC2 IP configured: $EC2_IP"
+    echo "   CORS will allow: http://$EC2_IP"
+    echo "   Frontend API URL: http://$EC2_IP/api"
+else
+    echo -e "${YELLOW}⚠${NC} Using localhost configuration"
+    echo "   To configure EC2 IP later, edit .env and replace YOUR_EC2_IP"
+fi
+
+echo ""
+echo "==================================================================="
 echo -e "${GREEN}Setup Complete!${NC}"
 echo "==================================================================="
 echo ""
@@ -88,16 +114,22 @@ echo "Your .env file has been created with:"
 echo "  - Secure PostgreSQL password"
 echo "  - Secure API secret key"
 echo "  - AWS credentials (if provided)"
+echo "  - EC2 IP address (if provided)"
 echo ""
 echo "Next steps:"
 echo "  1. Review and customize .env if needed"
 echo "  2. Run: docker-compose up -d"
-echo "  3. Access at http://localhost"
+if [ ! -z "$EC2_IP" ]; then
+    echo "  3. Access at http://$EC2_IP"
+else
+    echo "  3. Access at http://localhost"
+fi
 echo ""
-echo "For production deployment:"
-echo "  1. Update CORS_ORIGINS in .env with your domain"
-echo "  2. Update NEXT_PUBLIC_API_URL with your domain"
-echo "  3. Run: ./deploy.sh"
+echo "For production with domain and SSL:"
+echo "  1. Point your domain to EC2 instance"
+echo "  2. Update .env with your domain (replace EC2 IP)"
+echo "  3. Run: sudo certbot --nginx -d yourdomain.com"
+echo "  4. Update CORS_ORIGINS and NEXT_PUBLIC_API_URL to use https://"
 echo ""
 echo "Run './health-check.sh' to verify the deployment"
 echo ""
