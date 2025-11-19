@@ -1,0 +1,166 @@
+// =================================================================
+// Prisma Schema for Classifieds Marketplace POC
+// Database: PostgreSQL
+// =================================================================
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =================================================================
+// User Model
+// =================================================================
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String    @map("password_hash")
+  fullName      String?   @map("full_name")
+  phone         String?
+  avatarUrl     String?   @map("avatar_url")
+  bio           String?   @db.Text
+  location      String?
+  isVerified    Boolean   @default(false) @map("is_verified")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+
+  // Relations
+  listings      Listing[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  favorites     Favorite[]
+
+  @@map("users")
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
+}
+
+// =================================================================
+// Listing Model
+// =================================================================
+model Listing {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  title         String
+  description   String        @db.Text
+  price         Decimal       @db.Decimal(10, 2)
+  category      Category
+  condition     Condition     @default(USED)
+  status        ListingStatus @default(ACTIVE)
+  location      String
+  images        String[]      // Array of S3 URLs
+  views         Int           @default(0)
+  isPromoted    Boolean       @default(false) @map("is_promoted")
+  expiresAt     DateTime?     @map("expires_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  favorites     Favorite[]
+
+  @@map("listings")
+  @@index([userId])
+  @@index([category])
+  @@index([status])
+  @@index([price])
+  @@index([createdAt])
+  @@index([location])
+}
+
+// =================================================================
+// Message Model
+// =================================================================
+model Message {
+  id          String    @id @default(uuid())
+  listingId   String    @map("listing_id")
+  senderId    String    @map("sender_id")
+  receiverId  String    @map("receiver_id")
+  content     String    @db.Text
+  isRead      Boolean   @default(false) @map("is_read")
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+  @@index([listingId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@index([isRead])
+}
+
+// =================================================================
+// Favorite Model (Saved/Bookmarked Listings)
+// =================================================================
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  listingId String   @map("listing_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@map("favorites")
+  @@index([userId])
+  @@index([listingId])
+}
+
+// =================================================================
+// Enums
+// =================================================================
+
+enum Category {
+  ELECTRONICS
+  VEHICLES
+  REAL_ESTATE
+  JOBS
+  SERVICES
+  FASHION
+  HOME_GARDEN
+  SPORTS
+  PETS
+  BOOKS
+  TOYS
+  OTHER
+
+  @@map("category")
+}
+
+enum Condition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  USED
+
+  @@map("condition")
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  EXPIRED
+  DELETED
+
+  @@map("listing_status")
+}
