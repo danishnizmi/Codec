@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Navbar from '@/components/Navbar'
 
 export const metadata: Metadata = {
-  title: 'Codec - Buy & Sell Locally',
-  description: 'The best local marketplace to buy and sell items. Find great deals on electronics, vehicles, real estate, and more.',
+  title: 'CyberBazaar - Year 2077 Marketplace',
+  description: 'Anonymous marketplace for the cyberpunk era. High-tech, low-life. No accounts required. Trade anything in the streets of 2077.',
 }
 
 export default function RootLayout({
@@ -14,12 +13,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased bg-cyber-dark-900 text-gray-100">
-        <Navbar />
+      <body className="antialiased bg-cyber-void text-gray-100 font-cyber">
         <main className="min-h-screen">
           {children}
         </main>
-        <footer className="bg-cyber-dark-800 border-t border-primary-500/20 text-gray-300 py-12 mt-20">
+        <footer className="bg-cyber-dark/60 backdrop-blur-md border-t border-cyber-cyan/20 text-gray-300 py-12">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               {/* About */}
