@@ -81,8 +81,8 @@ export const listingsAPI = {
     return response.data;
   },
 
-  getS3UploadUrls: async (fileCount: number = 1) => {
-    const response = await api.post(`/listings/upload-urls?file_count=${fileCount}`);
+  getS3UploadUrls: async (file_count: number = 1) => {
+    const response = await api.post(`/listings/upload-urls?file_count=${file_count}`);
     return response.data;
   },
 };

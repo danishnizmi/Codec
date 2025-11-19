@@ -35,7 +35,7 @@ async function getListings(searchParams) {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching listings:', error);
+    console.error('Error fetching listings:', error.message || error.stack || String(error));
     return [];
   }
 }
