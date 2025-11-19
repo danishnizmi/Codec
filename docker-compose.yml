@@ -49,7 +49,7 @@ services:
       -c work_mem=4MB
       -c min_wal_size=512MB
       -c max_wal_size=1GB
-      -c max_connections=50
+      -c max_connections=20
 
   # =================================================================
   # FastAPI Backend

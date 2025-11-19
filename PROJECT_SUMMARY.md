@@ -165,8 +165,8 @@ Codec/
 - Nginx: 128MB limit
 
 ### Application Level
-- Gunicorn workers: 2
-- PostgreSQL connections: 50 max
+- Gunicorn workers: 1 (critical for 1GB RAM stability)
+- PostgreSQL connections: 20 max (matches API pool requirements)
 - Efficient database queries with indexes
 - Lazy loading strategies
 
