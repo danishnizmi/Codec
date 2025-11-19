@@ -6,10 +6,11 @@
 @tailwind utilities;
 
 :root {
-  --cyber-void: #020205;
+  --cyber-void: #050507;
   --cyber-dark: #0a0a0f;
   --cyber-cyan: #00f3ff;
   --cyber-pink: #ff00ff;
+  --cyber-purple: #9d00ff;
   --cyber-alert: #ff2a2a;
   --cyber-green: #39FF14;
 }
@@ -32,7 +33,7 @@ body {
   position: relative;
 }
 
-/* Scanline CRT Effect */
+/* Film Grain + Noise Overlay (SVG Pattern) */
 body::before {
   content: '';
   position: fixed;
@@ -40,15 +41,31 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.15),
-    rgba(0, 0, 0, 0.15) 1px,
-    transparent 1px,
-    transparent 2px
-  );
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.1),
+      rgba(0, 0, 0, 0.1) 1px,
+      transparent 1px,
+      transparent 2px
+    );
   pointer-events: none;
   z-index: 9999;
+  animation: grain 8s steps(10) infinite;
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
 }
 
 /* Subtle vignette effect */
@@ -59,7 +76,7 @@ body::after {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at center, transparent 0%, rgba(2, 2, 5, 0.8) 100%);
+  background: radial-gradient(ellipse at center, transparent 0%, rgba(5, 5, 7, 0.9) 100%);
   pointer-events: none;
   z-index: 9998;
 }
@@ -295,4 +312,120 @@ body::after {
 
 .clip-corner-lg {
   clip-path: polygon(24px 0%, 100% 0%, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0% 100%, 0% 24px);
+}
+
+/* 3D Grid Floor Effect */
+.grid-floor {
+  position: relative;
+  background: linear-gradient(to bottom, transparent, var(--cyber-void));
+  perspective: 1000px;
+  overflow: hidden;
+}
+
+.grid-floor::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image:
+    linear-gradient(to right, var(--cyber-cyan) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--cyber-cyan) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.15;
+  transform: rotateX(60deg) translateZ(-200px);
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: rotateX(60deg) translateZ(-200px) translateY(0); }
+  100% { transform: rotateX(60deg) translateZ(-200px) translateY(50px); }
+}
+
+/* Scroll Reveal Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 {
+  transition-delay: 0.1s;
+}
+
+.reveal-delay-2 {
+  transition-delay: 0.2s;
+}
+
+.reveal-delay-3 {
+  transition-delay: 0.3s;
+}
+
+.reveal-delay-4 {
+  transition-delay: 0.4s;
+}
+
+/* Terminal Input Style */
+.terminal-input {
+  font-family: 'Share Tech Mono', monospace;
+  background: rgba(0, 243, 255, 0.05);
+  border: 2px solid var(--cyber-cyan);
+  color: var(--cyber-cyan);
+  padding: 1rem 1.5rem;
+  font-size: 1.125rem;
+  letter-spacing: 0.05em;
+  clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
+  transition: all 0.3s ease;
+}
+
+.terminal-input:focus {
+  outline: none;
+  background: rgba(0, 243, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.3), 0 0 40px rgba(0, 243, 255, 0.1);
+  border-color: var(--cyber-cyan);
+}
+
+.terminal-input::placeholder {
+  color: rgba(0, 243, 255, 0.4);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* HUD Status Element */
+.hud-status {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cyber-green);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hud-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--cyber-green);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Glassmorphic Panel */
+.glass-panel {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(0, 243, 255, 0.2);
 }

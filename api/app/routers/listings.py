@@ -287,6 +287,108 @@ def moderate_content(
         )
 
 
+@router.post("/generate-listing")
+def generate_listing_ai(
+    item_type: str = Query(..., description="What are you selling?"),
+    category: Category = Query(..., description="Category"),
+    key_details: str = Query(default="", description="Any specific details about the item"),
+):
+    """
+    AI-powered listing generator.
+    Helps users create compelling listings with proper descriptions.
+    """
+    try:
+        moderation_service = get_moderation_service(
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+
+        prompt = f"""You are an AI assistant for CyberBazaar, a cyberpunk marketplace in Year 2077.
+
+Generate a compelling listing for the following item:
+- Item Type: {item_type}
+- Category: {category.value}
+- Additional Details: {key_details if key_details else "None provided"}
+
+Create a listing that:
+1. Has a catchy, cyberpunk-themed title (max 100 chars)
+2. Includes an engaging description (100-300 words)
+3. Uses cyberpunk/futuristic language and terminology
+4. Mentions condition, features, and why someone should buy it
+5. Is professional but fits the 2077 street market vibe
+
+Respond ONLY in this JSON format:
+{{
+  "title": "your generated title here",
+  "description": "your generated description here",
+  "suggested_price": 999,
+  "suggested_condition": "USED",
+  "suggested_location": "Night City District"
+}}"""
+
+        # Call Bedrock to generate listing
+        import json
+        bedrock_runtime = boto3.client(
+            service_name='bedrock-runtime',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+
+        request_body = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1000,
+            "temperature": 0.8,  # Creative but not too random
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        }
+
+        response = bedrock_runtime.invoke_model(
+            modelId="anthropic.claude-3-haiku-20240307-v1:0",
+            body=json.dumps(request_body)
+        )
+
+        response_body = json.loads(response['body'].read())
+        ai_response = response_body['content'][0]['text']
+
+        # Parse JSON from response
+        ai_response = ai_response.strip()
+        if ai_response.startswith("```"):
+            lines = ai_response.split("\n")
+            ai_response = "\n".join(lines[1:-1])
+
+        generated_data = json.loads(ai_response)
+
+        logger.info(f"AI generated listing for: {item_type}")
+
+        return {
+            "success": True,
+            "generated_title": generated_data.get("title", ""),
+            "generated_description": generated_data.get("description", ""),
+            "suggested_price": generated_data.get("suggested_price", 0),
+            "suggested_condition": generated_data.get("suggested_condition", "USED"),
+            "suggested_location": generated_data.get("suggested_location", "Night City"),
+        }
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse AI response: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AI generation failed - invalid response format"
+        )
+    except Exception as e:
+        logger.error(f"AI listing generation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"AI listing generator unavailable: {str(e)}"
+        )
+
+
 @router.patch("/{listing_id}/mark-sold", response_model=ListingResponse)
 def mark_as_sold(listing_id: str, db: Session = Depends(get_db)):
     """
