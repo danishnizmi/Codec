@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { listingsAPI } from '@/lib/api';
 
 const categories = [
-  { name: 'Electronics', icon: '💻', color: 'from-blue-500 to-blue-600' },
-  { name: 'Vehicles', icon: '🚗', color: 'from-red-500 to-red-600' },
-  { name: 'Real Estate', icon: '🏠', color: 'from-green-500 to-green-600' },
-  { name: 'Fashion', icon: '👕', color: 'from-purple-500 to-purple-600' },
-  { name: 'Home & Garden', icon: '🌺', color: 'from-pink-500 to-pink-600' },
-  { name: 'Sports', icon: '⚽', color: 'from-orange-500 to-orange-600' },
-  { name: 'Pets', icon: '🐾', color: 'from-yellow-500 to-yellow-600' },
-  { name: 'Other', icon: '🛍️', color: 'from-gray-500 to-gray-600' },
+  { name: 'Electronics', icon: '💻', color: 'from-primary-500 to-primary-600', glow: 'group-hover:shadow-glow-cyan' },
+  { name: 'Vehicles', icon: '🚗', color: 'from-secondary-500 to-secondary-600', glow: 'group-hover:shadow-glow-fuchsia' },
+  { name: 'Real Estate', icon: '🏠', color: 'from-accent-500 to-accent-600', glow: 'group-hover:shadow-glow-green' },
+  { name: 'Fashion', icon: '👕', color: 'from-secondary-400 to-secondary-500', glow: 'group-hover:shadow-glow-fuchsia' },
+  { name: 'Home & Garden', icon: '🌺', color: 'from-primary-400 to-primary-500', glow: 'group-hover:shadow-glow-cyan' },
+  { name: 'Sports', icon: '⚽', color: 'from-accent-400 to-accent-500', glow: 'group-hover:shadow-glow-green' },
+  { name: 'Pets', icon: '🐾', color: 'from-primary-300 to-secondary-400', glow: 'group-hover:shadow-glow' },
+  { name: 'Other', icon: '🛍️', color: 'from-gray-500 to-gray-600', glow: 'group-hover:shadow-soft' },
 ];
 
 export default function Home() {
@@ -35,56 +35,100 @@ export default function Home() {
   };
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-600 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+    <div className="bg-cyber-dark-900">
+      {/* CYBERPUNK HERO SECTION */}
+      <section className="relative overflow-hidden border-b border-primary-500/20">
+        {/* Animated Grid Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-cyber-dark-800 to-cyber-dark-900"></div>
         <div className="absolute inset-0" style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+          backgroundImage: `
+            linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px',
         }}></div>
 
-        <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 animate-fade-in leading-tight">
-              Buy & Sell <br />
-              <span className="bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-                Anything Locally
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl mb-10 text-blue-100 animate-slide-up max-w-2xl mx-auto">
-              Discover amazing deals in your area. Connect with buyers and sellers near you!
+        {/* Neon Glow Effects */}
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-pulse-glow"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary-500/20 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '1s' }}></div>
+
+        <div className="container mx-auto px-4 py-24 md:py-32 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Glitch Effect Title */}
+            <div className="mb-8">
+              <div className="inline-block relative">
+                <h1 className="text-6xl md:text-8xl font-black mb-6 animate-fade-in leading-tight tracking-tighter">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 animate-pulse-glow">
+                    TRADE
+                  </span>
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 via-accent-500 to-secondary-500">
+                    THE FUTURE
+                  </span>
+                </h1>
+                <div className="absolute -top-2 -left-2 text-primary-500/20 text-6xl md:text-8xl font-black -z-10">
+                  TRADE THE FUTURE
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xl md:text-2xl mb-12 text-gray-400 animate-slide-up max-w-3xl mx-auto leading-relaxed">
+              Enter the <span className="text-primary-500 font-bold">cyberpunk marketplace</span>.
+              Buy, sell, trade in the <span className="text-secondary-500 font-bold">digital realm</span>.
+              <br />
+              <span className="text-accent-500">No limits. No boundaries.</span>
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-scale-in">
-              <Link
-                href="/listings"
-                className="w-full sm:w-auto bg-white text-primary-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 hover:shadow-glow transition-all duration-300 transform hover:scale-105"
-              >
-                🔍 Browse Listings
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-scale-in">
+              <Link href="/listings" className="group relative w-full sm:w-auto">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative bg-gradient-to-r from-primary-500 to-primary-600 text-cyber-dark-900 px-10 py-4 rounded-lg font-black text-lg flex items-center gap-3 transform group-hover:scale-105 transition-all">
+                  <span className="text-2xl">⚡</span>
+                  BROWSE LISTINGS
+                </div>
               </Link>
-              <Link
-                href="/listings/create"
-                className="w-full sm:w-auto bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-glow transition-all duration-300 transform hover:scale-105"
-              >
-                📝 Sell Something
+              <Link href="/listings/create" className="group relative w-full sm:w-auto">
+                <div className="absolute inset-0 bg-gradient-to-r from-secondary-500 to-accent-500 rounded-lg blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative bg-cyber-dark-700 border-2 border-secondary-500 text-secondary-500 px-10 py-4 rounded-lg font-black text-lg flex items-center gap-3 hover:bg-secondary-500 hover:text-cyber-dark-900 transform group-hover:scale-105 transition-all">
+                  <span className="text-2xl">+</span>
+                  START SELLING
+                </div>
               </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500">1K+</div>
+                <div className="text-sm text-gray-500 mt-1">Active Listings</div>
+              </div>
+              <div className="text-center border-x border-primary-500/20">
+                <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 to-accent-500">500+</div>
+                <div className="text-sm text-gray-500 mt-1">Traders</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-500 to-primary-500">24/7</div>
+                <div className="text-sm text-gray-500 mt-1">Marketplace</div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Wave Separator */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#F9FAFB"/>
-          </svg>
-        </div>
+        {/* Bottom Border Glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent"></div>
       </section>
 
-      {/* Categories */}
-      <section className="py-16 bg-gray-50">
+      {/* CATEGORIES SECTION */}
+      <section className="py-20 bg-cyber-dark-900">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">
-            Browse by Category
-          </h2>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500 mb-4">
+              BROWSE CATEGORIES
+            </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-primary-500 to-secondary-500 mx-auto rounded-full"></div>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             {categories.map((category) => (
               <Link
@@ -92,11 +136,11 @@ export default function Home() {
                 href={`/listings?category=${category.name.toUpperCase().replace(/ & /g, '_').replace(/ /g, '_')}`}
                 className="group"
               >
-                <div className="bg-white rounded-2xl p-6 shadow-soft hover:shadow-glow transition-all duration-300 transform hover:scale-105 text-center">
-                  <div className={`w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-r ${category.color} flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`bg-cyber-dark-700/50 backdrop-blur-sm border border-primary-500/20 rounded-xl p-4 hover:border-primary-500 ${category.glow} transition-all duration-300 transform hover:scale-105 text-center`}>
+                  <div className={`w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-r ${category.color} flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300 border-2 border-transparent group-hover:border-white/20`}>
                     {category.icon}
                   </div>
-                  <h3 className="font-semibold text-sm text-gray-800 group-hover:text-primary-600 transition-colors">
+                  <h3 className="font-bold text-xs text-gray-300 group-hover:text-primary-500 transition-colors uppercase tracking-wider">
                     {category.name}
                   </h3>
                 </div>
@@ -106,16 +150,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Listings */}
-      <section className="py-16">
+      {/* FEATURED LISTINGS */}
+      <section className="py-20 bg-cyber-dark-800">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900">
-              Featured Listings
-            </h2>
-            <Link href="/listings" className="text-primary-600 font-semibold hover:text-primary-700 flex items-center gap-2">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500">
+                FEATURED ITEMS
+              </h2>
+              <div className="h-1 w-32 bg-gradient-to-r from-primary-500 to-secondary-500 mt-2 rounded-full"></div>
+            </div>
+            <Link href="/listings" className="text-primary-500 font-bold hover:text-primary-400 flex items-center gap-2 group">
               View All
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
@@ -124,10 +171,10 @@ export default function Home() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl p-4 shadow-soft animate-pulse">
-                  <div className="aspect-square bg-gray-200 rounded-xl mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div key={i} className="bg-cyber-dark-700/50 border border-primary-500/20 rounded-xl p-4 animate-pulse">
+                  <div className="aspect-square bg-cyber-dark-600 rounded-lg mb-4"></div>
+                  <div className="h-4 bg-cyber-dark-600 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-cyber-dark-600 rounded w-1/2"></div>
                 </div>
               ))}
             </div>
@@ -137,9 +184,9 @@ export default function Home() {
                 <Link
                   key={listing.id}
                   href={`/listings/${listing.id}`}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-soft hover:shadow-glow transition-all duration-300 transform hover:scale-105"
+                  className="group bg-cyber-dark-700/50 backdrop-blur-sm border border-primary-500/20 rounded-xl overflow-hidden hover:border-primary-500 hover:shadow-glow transition-all duration-300 transform hover:scale-105"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+                  <div className="aspect-square bg-cyber-dark-600 relative overflow-hidden">
                     {listing.images && listing.images.length > 0 ? (
                       <img
                         src={listing.images[0]}
@@ -147,67 +194,72 @@ export default function Home() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-4xl">
+                      <div className="w-full h-full flex items-center justify-center text-gray-600 text-5xl">
                         📦
                       </div>
                     )}
                     <div className="absolute top-3 right-3">
-                      <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-primary-600">
-                        ${listing.price}
+                      <div className="bg-cyber-dark-900/90 backdrop-blur-sm border border-primary-500/50 px-3 py-1 rounded-lg text-sm font-bold text-primary-500">
+                        ${parseFloat(listing.price).toFixed(2)}
                       </div>
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-lg mb-2 text-gray-900 truncate group-hover:text-primary-600 transition-colors">
+                    <h3 className="font-bold text-lg mb-2 text-gray-200 truncate group-hover:text-primary-500 transition-colors">
                       {listing.title}
                     </h3>
-                    <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                    <p className="text-gray-500 text-sm line-clamp-2 mb-3">
                       {listing.description}
                     </p>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center text-xs text-gray-600">
+                      <svg className="w-4 h-4 mr-1 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      {listing.location || 'Local'}
+                      {listing.location || 'Digital Realm'}
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="text-center py-20">
+            <div className="text-center py-20 bg-cyber-dark-700/30 border border-primary-500/20 rounded-xl">
               <div className="text-6xl mb-4">📭</div>
-              <p className="text-xl text-gray-500">No listings yet. Be the first to post!</p>
-              <Link href="/listings/create" className="inline-block mt-6 bg-primary-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-600 transition-colors">
-                Create First Listing
+              <p className="text-xl text-gray-400 mb-6">No listings in the digital void yet</p>
+              <Link href="/listings/create" className="inline-block bg-gradient-to-r from-primary-500 to-secondary-500 text-cyber-dark-900 px-8 py-3 rounded-lg font-bold hover:shadow-glow transition-all">
+                Be the First Trader
               </Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Start Selling?
+      {/* CTA SECTION */}
+      <section className="py-24 bg-cyber-dark-900 border-t border-primary-500/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-secondary-500/5 to-accent-500/5"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="text-4xl md:text-6xl font-black mb-6">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500">
+              READY TO ENTER
+            </span>
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 to-accent-500">
+              THE MARKETPLACE?
+            </span>
           </h2>
-          <p className="text-xl mb-10 text-blue-100 max-w-2xl mx-auto">
-            Join thousands of sellers making money from items they no longer need. It's free and takes less than a minute!
+          <p className="text-xl mb-12 text-gray-400 max-w-2xl mx-auto">
+            Join thousands of traders in the cyberpunk marketplace. Free forever. No limits.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/auth/register"
-              className="bg-white text-primary-600 px-10 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 hover:shadow-glow transition-all duration-300 transform hover:scale-105"
-            >
-              Sign Up Free
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Link href="/auth/register" className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative bg-gradient-to-r from-primary-500 to-secondary-500 text-cyber-dark-900 px-12 py-4 rounded-lg font-black text-lg transform group-hover:scale-105 transition-all">
+                SIGN UP FREE
+              </div>
             </Link>
-            <Link
-              href="/listings"
-              className="bg-transparent border-2 border-white text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-primary-600 transition-all duration-300 transform hover:scale-105"
-            >
-              Explore Listings
+            <Link href="/listings" className="group relative">
+              <div className="relative bg-cyber-dark-700 border-2 border-primary-500 text-primary-500 px-12 py-4 rounded-lg font-black text-lg hover:bg-primary-500 hover:text-cyber-dark-900 transform group-hover:scale-105 transition-all">
+                EXPLORE NOW
+              </div>
             </Link>
           </div>
         </div>
