@@ -70,12 +70,12 @@ EXPOSE 4000
 
 # Run with gunicorn + uvicorn workers for production
 # Memory-optimized settings for t3.micro:
-# - 2 workers (1GB RAM constraint)
+# - 1 worker (critical for 1GB RAM shared with Postgres, Next.js, Nginx)
 # - worker-class: uvicorn for async support
 # - max-requests: recycle workers to prevent memory leaks
 # - timeout: handle long-running requests
 CMD ["gunicorn", "app.main:app", \
-    "--workers", "2", \
+    "--workers", "1", \
     "--worker-class", "uvicorn.workers.UvicornWorker", \
     "--bind", "0.0.0.0:4000", \
     "--max-requests", "1000", \

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+// Use Nginx-proxied URL (/api) for client-side requests
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/api';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -77,6 +78,11 @@ export const listingsAPI = {
 
   getMyListings: async () => {
     const response = await api.get('/listings/user/my-listings');
+    return response.data;
+  },
+
+  getS3UploadUrls: async (fileCount: number = 1) => {
+    const response = await api.post(`/listings/upload-urls?file_count=${fileCount}`);
     return response.data;
   },
 };

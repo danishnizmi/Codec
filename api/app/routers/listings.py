@@ -2,16 +2,82 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime
+import boto3
+from botocore.exceptions import ClientError
 
 from ..database import get_db
 from ..models import User, Listing, ListingStatus
 from ..schemas import ListingCreate, ListingUpdate, ListingResponse
 from ..auth import get_current_active_user
+from ..config import settings
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
+
+# Initialize S3 client
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    region_name=settings.AWS_REGION
+)
+
+
+@router.post("/upload-urls", status_code=status.HTTP_200_OK)
+def get_s3_upload_urls(
+    file_count: int = Query(..., ge=1, le=10),
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, List[Dict[str, str]]]:
+    """
+    Generate presigned S3 URLs for image uploads.
+    Client uploads directly to S3, reducing server bandwidth and CPU.
+
+    Args:
+        file_count: Number of upload URLs to generate (1-10)
+        current_user: Authenticated user
+
+    Returns:
+        Dictionary with upload URLs and file keys
+    """
+    upload_urls = []
+
+    try:
+        for i in range(file_count):
+            # Generate unique file key
+            file_key = f"listings/{current_user.id}/{uuid.uuid4()}.jpg"
+
+            # Generate presigned POST URL (more secure than PUT)
+            presigned_post = s3_client.generate_presigned_post(
+                Bucket=settings.S3_BUCKET,
+                Key=file_key,
+                Fields={
+                    "Content-Type": "image/jpeg",
+                    "x-amz-server-side-encryption": "AES256"
+                },
+                Conditions=[
+                    {"Content-Type": "image/jpeg"},
+                    ["content-length-range", 0, 10485760],  # Max 10MB
+                    {"x-amz-server-side-encryption": "AES256"}
+                ],
+                ExpiresIn=3600  # 1 hour
+            )
+
+            upload_urls.append({
+                "file_key": file_key,
+                "upload_url": presigned_post["url"],
+                "fields": presigned_post["fields"],
+                "public_url": f"https://{settings.S3_BUCKET}.s3.{settings.AWS_REGION}.amazonaws.com/{file_key}"
+            })
+
+    except ClientError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate upload URLs: {str(e)}"
+        )
+
+    return {"upload_urls": upload_urls}
 
 
 @router.get("", response_model=List[ListingResponse])
