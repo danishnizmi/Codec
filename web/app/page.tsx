@@ -54,22 +54,17 @@ export default function Home() {
 
         <div className="container mx-auto px-4 py-24 md:py-32 relative z-10">
           <div className="max-w-5xl mx-auto text-center">
-            {/* Glitch Effect Title */}
+            {/* Hero Title */}
             <div className="mb-8">
-              <div className="inline-block relative">
-                <h1 className="text-6xl md:text-8xl font-black mb-6 animate-fade-in leading-tight tracking-tighter">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 animate-pulse-glow">
-                    TRADE
-                  </span>
-                  <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 via-accent-500 to-secondary-500">
-                    THE FUTURE
-                  </span>
-                </h1>
-                <div className="absolute -top-2 -left-2 text-primary-500/20 text-6xl md:text-8xl font-black -z-10">
-                  TRADE THE FUTURE
-                </div>
-              </div>
+              <h1 className="text-6xl md:text-8xl font-black mb-6 animate-fade-in leading-tight tracking-tighter">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 animate-pulse-glow">
+                  TRADE
+                </span>
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-500 via-accent-500 to-secondary-500">
+                  THE FUTURE
+                </span>
+              </h1>
             </div>
 
             <p className="text-xl md:text-2xl mb-12 text-gray-400 animate-slide-up max-w-3xl mx-auto leading-relaxed">
