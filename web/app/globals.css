@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --foreground-rgb: 229, 231, 235; /* Light gray text */
+  --background-rgb: 10, 14, 26; /* Deep space black */
 }
 
 body {
@@ -14,18 +14,40 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 hover:shadow-glow-cyan text-cyber-dark-900 font-bold py-2 px-6 rounded-lg transition-all duration-300;
   }
 
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors;
+    @apply bg-gradient-to-r from-secondary-500 to-secondary-600 hover:shadow-glow-fuchsia text-white font-bold py-2 px-6 rounded-lg transition-all duration-300;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500;
+    @apply w-full px-4 py-3 bg-cyber-dark-700 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/50 transition-all;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow;
+    @apply bg-cyber-dark-700/50 backdrop-blur-md border border-primary-500/20 rounded-xl p-6 hover:shadow-glow hover:border-primary-500/40 transition-all duration-300;
   }
+
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-primary-500/30 rounded-xl;
+  }
+}
+
+/* Custom scrollbar for cyberpunk theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #161B22;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00FFFF, #FF00FF);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00DADA, #D900D9);
 }
