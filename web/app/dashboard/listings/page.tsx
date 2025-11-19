@@ -131,9 +131,12 @@ export default function MyListingsPage() {
                       >
                         View
                       </Link>
-                      <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                      <Link
+                        href={`/listings/${listing.id}/edit`}
+                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                      >
                         Edit
-                      </button>
+                      </Link>
                       <button
                         onClick={() => handleDelete(listing.id)}
                         className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition-colors"
