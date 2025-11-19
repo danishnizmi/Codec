@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Use Nginx-proxied URL (/api) for client-side requests
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/api';
+// Relative path works for both local and production (EC2)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export const api = axios.create({
   baseURL: API_URL,
