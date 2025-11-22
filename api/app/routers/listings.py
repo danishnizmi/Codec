@@ -337,24 +337,25 @@ Respond ONLY in this JSON format:
         )
 
         request_body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
-            "temperature": 0.8,  # Creative but not too random
             "messages": [
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": [{"text": prompt}]
                 }
-            ]
+            ],
+            "inferenceConfig": {
+                "maxTokens": 1000,
+                "temperature": 0.8  # Creative but not too random
+            }
         }
 
         response = bedrock_runtime.invoke_model(
-            modelId="anthropic.claude-3-haiku-20240307-v1:0",
+            modelId="us.amazon.nova-pro-v1:0",
             body=json.dumps(request_body)
         )
 
         response_body = json.loads(response['body'].read())
-        ai_response = response_body['content'][0]['text']
+        ai_response = response_body['output']['message']['content'][0]['text']
 
         # Parse JSON from response
         ai_response = ai_response.strip()

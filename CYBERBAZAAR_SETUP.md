@@ -111,7 +111,7 @@ Frontend will be available at: **http://localhost:3000**
 
 ## AWS Bedrock Setup (Required)
 
-CyberBazaar uses AWS Bedrock Claude 3 Haiku for:
+CyberBazaar uses AWS Bedrock **Amazon Nova Pro** for:
 - **Content Moderation** - Filters harmful/illegal content
 - **AI Listing Generator** - Helps users create compelling listings
 
@@ -119,9 +119,8 @@ CyberBazaar uses AWS Bedrock Claude 3 Haiku for:
 
 1. Go to [AWS Bedrock Console](https://console.aws.amazon.com/bedrock/)
 2. Navigate to **Model access** (left sidebar)
-3. Click **Manage model access**
-4. Enable: **Anthropic - Claude 3 Haiku**
-5. Submit request (usually instant approval)
+3. **Amazon Nova Pro** is automatically available (no approval needed!)
+4. Just ensure your AWS credentials have Bedrock access
 
 ### Create IAM User
 
@@ -160,10 +159,12 @@ result = service.moderate_content(
     description='This is a test product description.'
 )
 
-print('✓ Bedrock connection successful!')
+print('✓ Amazon Nova Pro connection successful!')
 print(f'Result: {result}')
 "
 ```
+
+**Model Used**: `us.amazon.nova-pro-v1:0` (Amazon's own model - no approval required!)
 
 ---
 
@@ -498,13 +499,14 @@ docker-compose logs -f web
 
 ## Cost Estimates
 
-### AWS Bedrock (Claude 3 Haiku)
-- **Input**: $0.00025 per 1K tokens (~$0.25 per million tokens)
-- **Output**: $0.00125 per 1K tokens (~$1.25 per million tokens)
-- **Typical moderation check**: ~300 tokens = $0.0004
-- **1000 listings/day**: ~$0.40/day = ~$12/month
+### AWS Bedrock (Amazon Nova Pro)
+- **Input**: $0.0008 per 1K input tokens
+- **Output**: $0.0032 per 1K output tokens
+- **Typical moderation check**: ~300 input tokens + ~100 output tokens = $0.00056
+- **AI listing generation**: ~200 input + ~400 output = $0.00144
+- **1000 listings/day**: ~$1.70/day = ~$51/month
 
-Very affordable for content moderation!
+Very affordable for AI-powered marketplace! Plus, **no approval required** since it's Amazon's own model!
 
 ---
 
