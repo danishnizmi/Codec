@@ -6,9 +6,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Search, TrendingUp, Clock, Shield, ChevronRight, LayoutGrid } from 'lucide-react';
 import CyberNavbar from '../components/CyberNavbar';
 import ListingCard from '../components/ListingCard';
 import CreateListingModal from '../components/CreateListingModal';
+import Footer from '../components/Footer';
 import { Listing, Category, MOCK_LISTINGS } from './types';
 import { useScrollRevealBatch } from './hooks/useScrollReveal';
 import { getCategoryHeroImage } from './constants';
@@ -100,6 +102,7 @@ export default function HomePage() {
             {/* Terminal Search Bar */}
             <div className="max-w-3xl mx-auto reveal" data-delay="200">
               <div className="relative">
+                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyber-cyan" />
                 <input
                   type="text"
                   placeholder=">> SEARCH THE MARKETPLACE..."
@@ -107,40 +110,34 @@ export default function HomePage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="terminal-input w-full pl-16"
                 />
-                <svg
-                  className="absolute left-6 top-1/2 transform -translate-y-1/2 w-6 h-6 text-cyber-cyan"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
               </div>
             </div>
 
             {/* Stats HUD */}
-            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto reveal" data-delay="300">
-              <div className="text-center">
-                <div className="text-4xl font-heading font-bold text-cyber-cyan mb-2">
+            <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto pt-4 reveal" data-delay="300">
+              <div className="text-center border border-cyber-cyan/20 clip-corner-sm p-4 bg-cyber-dark/40">
+                <div className="text-3xl font-heading font-bold text-cyber-cyan mb-1">
                   {listings.length}+
                 </div>
-                <div className="text-xs text-gray-500 font-cyber uppercase tracking-wider">
+                <div className="text-[10px] text-gray-500 font-cyber uppercase tracking-wider">
                   Active Listings
                 </div>
               </div>
-              <div className="text-center border-x border-cyber-cyan/20">
-                <div className="text-4xl font-heading font-bold text-cyber-pink mb-2">
+              <div className="text-center border border-cyber-pink/20 clip-corner-sm p-4 bg-cyber-dark/40">
+                <div className="flex items-center justify-center gap-1 text-3xl font-heading font-bold text-cyber-pink mb-1">
+                  <Clock className="w-6 h-6" />
                   24/7
                 </div>
-                <div className="text-xs text-gray-500 font-cyber uppercase tracking-wider">
+                <div className="text-[10px] text-gray-500 font-cyber uppercase tracking-wider">
                   Always Online
                 </div>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-heading font-bold text-cyber-green mb-2">
+              <div className="text-center border border-cyber-green/20 clip-corner-sm p-4 bg-cyber-dark/40">
+                <div className="flex items-center justify-center gap-1 text-3xl font-heading font-bold text-cyber-green mb-1">
+                  <Shield className="w-6 h-6" />
                   100%
                 </div>
-                <div className="text-xs text-gray-500 font-cyber uppercase tracking-wider">
+                <div className="text-[10px] text-gray-500 font-cyber uppercase tracking-wider">
                   Anonymous
                 </div>
               </div>
@@ -149,48 +146,62 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Filter - Enhanced with Images */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-cyber-dark/40">
+      {/* Category Filter - Minimalistic Grid */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-cyber-dark/30 border-y border-cyber-cyan/10">
         <div className="container mx-auto">
-          <h2 className="text-2xl font-heading font-bold text-center text-white mb-8 reveal">
-            BROWSE CATEGORIES
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-heading font-bold text-white reveal flex items-center gap-2">
+              <LayoutGrid className="w-5 h-5 text-cyber-cyan" />
+              BROWSE CATEGORIES
+            </h2>
+            <span className="text-xs font-cyber text-gray-600">
+              {listings.length} RESULTS
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3">
             {categories.map((category, index) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category as any)}
                 className={`
-                  relative h-32 overflow-hidden group reveal clip-corner-md
+                  relative h-24 overflow-hidden group reveal clip-corner-sm
+                  border-2 transition-all duration-300
                   ${selectedCategory === category
-                    ? 'ring-2 ring-cyber-cyan shadow-cyber-cyan'
-                    : 'ring-1 ring-cyber-cyan/20 hover:ring-cyber-cyan/60'
+                    ? 'border-cyber-cyan shadow-cyber-cyan'
+                    : 'border-cyber-cyan/20 hover:border-cyber-cyan/60'
                   }
-                  transition-all duration-300
                 `}
-                data-delay={index * 50}
+                data-delay={index * 30}
               >
                 {/* Background Image */}
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                  style={{
-                    backgroundImage: `url(${getCategoryHeroImage(category)})`,
-                  }}
-                />
+                {category !== 'ALL' && (
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                    style={{
+                      backgroundImage: `url(${getCategoryHeroImage(category)})`,
+                    }}
+                  />
+                )}
 
                 {/* Dark Overlay */}
                 <div className={`
                   absolute inset-0 transition-all duration-300
                   ${selectedCategory === category
-                    ? 'bg-cyber-cyan/30'
-                    : 'bg-black/70 group-hover:bg-black/50'
+                    ? 'bg-cyber-cyan/20'
+                    : category === 'ALL'
+                      ? 'bg-cyber-dark/90'
+                      : 'bg-black/70 group-hover:bg-black/50'
                   }
                 `} />
 
                 {/* Category Name */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                  {selectedCategory === category && (
+                    <ChevronRight className="w-4 h-4 text-cyber-cyan animate-pulse" />
+                  )}
                   <span className={`
-                    font-heading font-bold text-sm uppercase tracking-wider
+                    font-heading font-bold text-[10px] uppercase tracking-wider text-center px-2
                     ${selectedCategory === category
                       ? 'text-white text-shadow-glow'
                       : 'text-gray-300 group-hover:text-cyber-cyan'
@@ -200,11 +211,6 @@ export default function HomePage() {
                     {category}
                   </span>
                 </div>
-
-                {/* Corner Accent */}
-                {selectedCategory === category && (
-                  <div className="absolute top-2 right-2 w-2 h-2 bg-cyber-cyan animate-pulse" />
-                )}
               </button>
             ))}
           </div>
@@ -214,12 +220,12 @@ export default function HomePage() {
       {/* Listings Grid */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          {/* Section Title */}
-          <div className="text-center mb-12 reveal">
-            <h2 className="text-4xl font-heading font-bold text-white mb-4">
-              ACTIVE <span className="text-cyber-cyan">LISTINGS</span>
+          {/* Section Header */}
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-2xl font-heading font-bold text-white reveal flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-cyber-pink" />
+              ACTIVE LISTINGS
             </h2>
-            <div className="h-1 w-24 bg-gradient-to-r from-cyber-cyan to-cyber-pink mx-auto"></div>
           </div>
 
           {isLoading ? (
@@ -230,12 +236,16 @@ export default function HomePage() {
               </p>
             </div>
           ) : listings.length === 0 ? (
-            <div className="text-center py-32 reveal">
-              <svg className="w-24 h-24 mx-auto mb-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-              <p className="text-2xl text-gray-500 font-heading mb-2">NO LISTINGS FOUND</p>
-              <p className="text-gray-600 font-cyber">Try a different search or category</p>
+            <div className="text-center py-20">
+              <div className="w-20 h-20 mx-auto mb-6 bg-cyber-dark/60 border-2 border-cyber-cyan/30 clip-corner-md flex items-center justify-center">
+                <Search className="w-10 h-10 text-cyber-cyan/50" />
+              </div>
+              <h3 className="text-xl font-heading font-bold text-gray-500 mb-2">
+                NO LISTINGS FOUND
+              </h3>
+              <p className="text-sm text-gray-600 font-cyber">
+                Try a different search or category
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -252,6 +262,9 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Create Listing Modal */}
       {isCreateModalOpen && (
