@@ -44,14 +44,20 @@ export default function AIListingAssistant({ onClose, onUseGenerated }: AIListin
       });
 
       if (!response.ok) {
-        throw new Error('AI generation failed');
+        const errorData = await response.json().catch(() => ({ detail: 'AI generation failed' }));
+        throw new Error(
+          typeof errorData.detail === 'string'
+            ? errorData.detail
+            : 'AI generation service unavailable. Please check AWS Bedrock configuration.'
+        );
       }
 
       const data = await response.json();
       setGeneratedData(data);
       setStep(2);
     } catch (err: any) {
-      setError(err.message || 'Failed to generate listing');
+      console.error('AI generation error:', err);
+      setError(err.message || 'Failed to generate listing. Please try again.');
     } finally {
       setIsGenerating(false);
     }

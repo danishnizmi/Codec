@@ -105,8 +105,26 @@ export const CATEGORY_IMAGE_POOL = {
   ],
 };
 
+// Hero background images for each category
+export const CATEGORY_HERO_IMAGES = {
+  ALL: UNSPLASH_IMAGES.NEON_CITY,
+  CYBERWARE: UNSPLASH_IMAGES.VR_HEADSET,
+  SOFTWARE: UNSPLASH_IMAGES.CIRCUIT_BOARD,
+  HARDWARE: UNSPLASH_IMAGES.GAMING_SETUP,
+  VEHICLES: UNSPLASH_IMAGES.MOTORCYCLE,
+  WEAPONS: UNSPLASH_IMAGES.NEON_TECH,
+  CLOTHING: UNSPLASH_IMAGES.LEATHER_JACKET,
+  SERVICES: UNSPLASH_IMAGES.CITY_NIGHT,
+  MISC: UNSPLASH_IMAGES.NEON_SIGNS,
+};
+
 // Helper function to get a random image for a category
 export function getCategoryImage(category: string, index: number = 0): string {
   const pool = CATEGORY_IMAGE_POOL[category as keyof typeof CATEGORY_IMAGE_POOL] || CATEGORY_IMAGE_POOL.MISC;
   return pool[index % pool.length];
+}
+
+// Get hero image for category
+export function getCategoryHeroImage(category: string): string {
+  return CATEGORY_HERO_IMAGES[category as keyof typeof CATEGORY_HERO_IMAGES] || CATEGORY_HERO_IMAGES.ALL;
 }

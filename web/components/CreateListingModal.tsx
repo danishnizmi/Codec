@@ -79,14 +79,19 @@ export default function CreateListingModal({ onClose, onSuccess }: CreateListing
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to create listing' }));
 
         // Handle content moderation rejection
         if (response.status === 400 && errorData.detail?.error === 'Content moderation failed') {
-          throw new Error(`Content rejected: ${errorData.detail.reason}`);
+          throw new Error(`Content rejected: ${errorData.detail.reason || 'Contains prohibited content'}`);
         }
 
-        throw new Error(errorData.detail || 'Failed to create listing');
+        // Handle other errors
+        const errorMessage = typeof errorData.detail === 'string'
+          ? errorData.detail
+          : errorData.detail?.message || JSON.stringify(errorData.detail || 'Failed to create listing');
+
+        throw new Error(errorMessage);
       }
 
       // Success
@@ -96,7 +101,8 @@ export default function CreateListingModal({ onClose, onSuccess }: CreateListing
       }, 1500);
 
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      console.error('Create listing error:', err);
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

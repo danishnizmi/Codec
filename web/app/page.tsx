@@ -11,6 +11,7 @@ import ListingCard from '../components/ListingCard';
 import CreateListingModal from '../components/CreateListingModal';
 import { Listing, Category, MOCK_LISTINGS } from './types';
 import { useScrollRevealBatch } from './hooks/useScrollReveal';
+import { getCategoryHeroImage } from './constants';
 
 export default function HomePage() {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -148,26 +149,62 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-cyber-dark/30">
+      {/* Category Filter - Enhanced with Images */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-cyber-dark/40">
         <div className="container mx-auto">
-          <div className="flex flex-wrap gap-3 justify-center">
+          <h2 className="text-2xl font-heading font-bold text-center text-white mb-8 reveal">
+            BROWSE CATEGORIES
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {categories.map((category, index) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category as any)}
                 className={`
-                  category-badge px-5 py-2.5 font-cyber text-xs uppercase
-                  reveal
+                  relative h-32 overflow-hidden group reveal clip-corner-md
                   ${selectedCategory === category
-                    ? 'bg-cyber-cyan text-cyber-void border-cyber-cyan shadow-cyber-cyan'
-                    : 'bg-cyber-dark/60 text-gray-400 border-gray-600 hover:border-cyber-cyan hover:text-cyber-cyan'
+                    ? 'ring-2 ring-cyber-cyan shadow-cyber-cyan'
+                    : 'ring-1 ring-cyber-cyan/20 hover:ring-cyber-cyan/60'
                   }
                   transition-all duration-300
                 `}
                 data-delay={index * 50}
               >
-                {category}
+                {/* Background Image */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                  style={{
+                    backgroundImage: `url(${getCategoryHeroImage(category)})`,
+                  }}
+                />
+
+                {/* Dark Overlay */}
+                <div className={`
+                  absolute inset-0 transition-all duration-300
+                  ${selectedCategory === category
+                    ? 'bg-cyber-cyan/30'
+                    : 'bg-black/70 group-hover:bg-black/50'
+                  }
+                `} />
+
+                {/* Category Name */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className={`
+                    font-heading font-bold text-sm uppercase tracking-wider
+                    ${selectedCategory === category
+                      ? 'text-white text-shadow-glow'
+                      : 'text-gray-300 group-hover:text-cyber-cyan'
+                    }
+                    transition-colors duration-300
+                  `}>
+                    {category}
+                  </span>
+                </div>
+
+                {/* Corner Accent */}
+                {selectedCategory === category && (
+                  <div className="absolute top-2 right-2 w-2 h-2 bg-cyber-cyan animate-pulse" />
+                )}
               </button>
             ))}
           </div>
