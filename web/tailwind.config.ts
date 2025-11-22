@@ -14,17 +14,15 @@ const config: Config = {
       },
       colors: {
         // CYBERPUNK 2077 THEME
-        cyber: {
-          void: '#020205',      // Deep Void Black background
-          dark: '#0a0a0f',      // Slightly lighter black
-          neonCyan: '#00f3ff',  // Neon Cyan accent
-          neonPink: '#ff00ff',  // Neon Pink/Magenta
-          neonGreen: '#39FF14', // Neon Green
-          neonBlue: '#00d4ff',  // Neon Blue
-          neonPurple: '#9d00ff',// Neon Purple
-          alert: '#ff2a2a',     // Alert Red
-          yellow: '#ffd700',    // Yellow accent
-        },
+        'cyber-void': '#020205',    // Deep Void Black background
+        'cyber-dark': '#0a0a0f',    // Slightly lighter black
+        'cyber-cyan': '#00f3ff',    // Neon Cyan accent
+        'cyber-pink': '#ff00ff',    // Neon Pink/Magenta
+        'cyber-green': '#39FF14',   // Neon Green
+        'cyber-blue': '#00d4ff',    // Neon Blue
+        'cyber-purple': '#9d00ff',  // Neon Purple
+        'cyber-alert': '#ff2a2a',   // Alert Red
+        'cyber-yellow': '#ffd700',  // Yellow accent
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
