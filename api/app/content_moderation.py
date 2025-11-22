@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ContentModerationService:
     """
     Content moderation service using AWS Bedrock AI models.
-    Uses Claude 3 Haiku for fast, cost-effective content analysis.
+    Uses Amazon Nova Pro for fast, reliable content analysis.
     """
 
     def __init__(
@@ -38,7 +38,7 @@ class ContentModerationService:
                 aws_secret_access_key=aws_secret_access_key,
                 region_name=region_name
             )
-            self.model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+            self.model_id = "us.amazon.nova-pro-v1:0"
             logger.info(f"Initialized ContentModerationService with model: {self.model_id}")
         except Exception as e:
             logger.error(f"Failed to initialize AWS Bedrock client: {e}")
@@ -46,7 +46,7 @@ class ContentModerationService:
 
     def _call_bedrock_model(self, prompt: str) -> str:
         """
-        Make a call to AWS Bedrock Claude model.
+        Make a call to AWS Bedrock Amazon Nova Pro model.
 
         Args:
             prompt: The prompt to send to the model
@@ -56,15 +56,16 @@ class ContentModerationService:
         """
         try:
             request_body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 200,
-                "temperature": 0.0,  # Deterministic responses for content moderation
                 "messages": [
                     {
                         "role": "user",
-                        "content": prompt
+                        "content": [{"text": prompt}]
                     }
-                ]
+                ],
+                "inferenceConfig": {
+                    "maxTokens": 500,
+                    "temperature": 0.0  # Deterministic responses for content moderation
+                }
             }
 
             response = self.bedrock_runtime.invoke_model(
@@ -73,7 +74,7 @@ class ContentModerationService:
             )
 
             response_body = json.loads(response['body'].read())
-            return response_body['content'][0]['text']
+            return response_body['output']['message']['content'][0]['text']
 
         except ClientError as e:
             logger.error(f"AWS Bedrock API error: {e}")
